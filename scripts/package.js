@@ -1,6 +1,11 @@
-// Builds dist/Tessera-darwin-arm64/Tessera.app.
+// Builds dist/Tessera-darwin-<arch>/Tessera.app.
 //
-//   npm run package     (= node scripts/package.js)
+//   npm run package                          arm64 only (= node scripts/package.js)
+//   npm run release                          arm64 + x64, each zipped for a GitHub release
+//   node scripts/package.js --arch=x64 --zip
+//
+// --zip writes dist/Tessera-<version>-mac-<arch>.zip with `ditto`, which keeps
+// the bundle's symlinks and signature intact (plain `zip` does not).
 //
 // Uses @electron/packager (ESM-only since v20, so it is loaded with a dynamic
 // import from this CommonJS script). The Electron zip comes from the
@@ -19,6 +24,11 @@ const ROOT = path.resolve(__dirname, '..');
 const pkg = require(path.join(ROOT, 'package.json'));
 
 const ICON = path.join(ROOT, 'build', 'icon.icns');
+
+const args = process.argv.slice(2);
+const flag = (name) => args.find((a) => a === `--${name}` || a.startsWith(`--${name}=`));
+const ARCHS = (flag('arch')?.split('=')[1] || 'arm64').split(',');
+const ZIP = Boolean(flag('zip'));
 
 // Matched against paths relative to ROOT, with a leading slash.
 const IGNORE = [
@@ -68,7 +78,7 @@ async function main() {
     buildVersion: pkg.version,
     icon: ICON,
     platform: 'darwin',
-    arch: 'arm64',
+    arch: ARCHS,
     out: path.join(ROOT, 'dist'),
     overwrite: true,
     asar: true,
@@ -107,6 +117,14 @@ async function main() {
     }
     console.log(`built:    ${path.relative(ROOT, app)} (${duSize(app)})`);
     console.log(`asar:     ${duSize(path.join(app, 'Contents', 'Resources', 'app.asar'))}`);
+
+    if (ZIP) {
+      const arch = path.basename(outDir).split('-').pop();
+      const zip = path.join(ROOT, 'dist', `Tessera-${pkg.version}-mac-${arch}.zip`);
+      fs.rmSync(zip, { force: true });
+      execFileSync('ditto', ['-c', '-k', '--sequesterRsrc', '--keepParent', app, zip]);
+      console.log(`zipped:   ${path.relative(ROOT, zip)} (${duSize(zip)})`);
+    }
   }
 }
 

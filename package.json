@@ -16,7 +16,8 @@
     "start": "electron .",
     "dev": "electron . --dev",
     "icon": "electron scripts/make-icon.js",
-    "package": "node scripts/package.js"
+    "package": "node scripts/package.js",
+    "release": "node scripts/package.js --arch=arm64,x64 --zip"
   },
   "devDependencies": {
     "@electron/packager": "20.3.0",

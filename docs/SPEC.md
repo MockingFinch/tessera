@@ -34,7 +34,7 @@ src/scanner/worker.js        utilityProcess entry: wires core.js to process.pare
 scripts/scan-bench.js        CLI harness: node scripts/scan-bench.js <path>
 scripts/scan-fixture-test.js scanner correctness checks
 scripts/make-icon.js         renders build/icon.png + build/icon.icns
-scripts/package.js           builds dist/Tessera-darwin-arm64/Tessera.app
+scripts/package.js           builds dist/Tessera-darwin-<arch>/Tessera.app (+ release zips)
 build/                       icon assets
 src/renderer/**              all UI
 docs/                        SPEC.md (this file), DESIGN.md, ARCHITECTURE.md

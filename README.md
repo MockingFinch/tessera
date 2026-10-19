@@ -9,7 +9,8 @@ A disk-space visualizer for macOS that draws your whole disk as one living, zoom
 
 <p align="center">
   <img alt="macOS 13+" src="https://img.shields.io/badge/macOS-13%2B-1f1f22?logo=apple&logoColor=white">
-  <img alt="Apple silicon" src="https://img.shields.io/badge/Apple%20silicon-arm64-1f1f22">
+  <img alt="Apple silicon and Intel" src="https://img.shields.io/badge/Apple%20silicon%20%2B%20Intel-1f1f22">
+  <a href="https://github.com/MockingFinch/tessera/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/MockingFinch/tessera?color=1f1f22&label=download"></a>
   <img alt="Electron 44" src="https://img.shields.io/badge/Electron-44-1f1f22?logo=electron&logoColor=9feaf9">
   <img alt="MIT license" src="https://img.shields.io/badge/license-MIT-1f1f22">
 </p>
@@ -63,7 +64,35 @@ list view. [docs/DESIGN.md](docs/DESIGN.md) explains why.
 
 ## Install
 
-There's no prebuilt download yet, so build it yourself. It takes about a minute:
+**[Download the latest release](https://github.com/MockingFinch/tessera/releases/latest)**:
+
+| Your Mac | File |
+|---|---|
+| Apple silicon (M1 or later) | `Tessera-1.0.0-mac-arm64.zip` |
+| Intel | `Tessera-1.0.0-mac-x64.zip` |
+
+Unzip it and drag `Tessera.app` into Applications.
+
+**First launch.** Tessera is open source and ad-hoc signed, not notarized by Apple, so macOS
+blocks it the first time you open it. To allow it:
+
+1. Open Tessera once and dismiss the warning.
+2. Open **System Settings → Privacy & Security**. Scroll down and click **Open Anyway** next to
+   the message about Tessera, then confirm. (On macOS 13 and 14, Control-clicking the app and
+   choosing **Open** also works.)
+
+Or, in Terminal:
+
+```sh
+xattr -dr com.apple.quarantine /Applications/Tessera.app
+```
+
+To see everything on your disk, give it **Full Disk Access** (see [below](#full-disk-access)).
+Without it, macOS hides some folders, and Tessera shows a *Limited access* pill.
+
+### Build it yourself
+
+It takes about a minute:
 
 ```sh
 git clone https://github.com/MockingFinch/tessera.git
@@ -74,15 +103,11 @@ npm run package      # → dist/Tessera-darwin-arm64/Tessera.app
 open dist/Tessera-darwin-arm64
 ```
 
-Drag `Tessera.app` into Applications. To see everything on your disk, give it **Full Disk
-Access** (see [below](#full-disk-access)). Without it, macOS hides some folders, and Tessera
-shows a *Limited access* pill.
-
 To just run it from source, use `npm start`.
 
 ## Requirements
 
-- **macOS 13 or later.** The packaged app sets `LSMinimumSystemVersion` 13.0 and is built for Apple silicon (arm64) only.
+- **macOS 13 or later.** The packaged app sets `LSMinimumSystemVersion` 13.0. Releases ship separate builds for Apple silicon (arm64) and Intel (x64).
 - **Node 22.12 or later** for tooling. `electron@44.9.0`, `@electron/get` and `@electron/packager` all declare `"node": ">= 22.12.0"`, and Electron's install script downloads the binary through `@electron/get`. The repo's `.nvmrc` pins Node 24.
 
 ## Development
@@ -107,6 +132,7 @@ works when the app isn't packaged.
 | `npm run dev` | Same as `npm start`, plus detached DevTools. |
 | `npm run icon` | Runs `scripts/make-icon.js` under Electron. It renders the icon offscreen and writes `build/icon.png` (1024 px), `build/icon.iconset/` (via `sips`), `build/icon.icns` (via `iconutil`) and `build/mark.svg`. |
 | `npm run package` | Runs `scripts/package.js`, which builds `dist/Tessera-darwin-arm64/Tessera.app` with `@electron/packager` (asar, arm64), then checks the signature and re-signs ad hoc if needed. It uses the committed `build/icon.icns`, so you only need `npm run icon` if you change the icon. |
+| `npm run release` | Builds both arm64 and x64, then zips each with `ditto` into `dist/Tessera-<version>-mac-<arch>.zip`, ready to attach to a GitHub release. |
 | `node scripts/scan-bench.js <path>` | Scanner benchmark in plain Node. See [Scanner bench and fixture test](#scanner-bench-and-fixture-test). |
 | `node scripts/scan-fixture-test.js` | Scanner correctness checks against a generated fixture tree. |
 
@@ -264,7 +290,7 @@ tessera/
 │   ├── DESIGN.md           product and design decisions (color, motion, appearance, cuts)
 │   └── media/              screenshots, demo GIF and MP4 (made with TESSERA_DEMO + TESSERA_RECORD_DIR)
 ├── build/                  icon.png, icon.icns, icon.iconset/, mark.svg (npm run icon)
-├── dist/                   Tessera-darwin-arm64/Tessera.app (npm run package)
+├── dist/                   Tessera-darwin-<arch>/Tessera.app and release zips (npm run package / release)
 ├── scripts/
 │   ├── make-icon.js        renders the app icon (runs under Electron)
 │   ├── package.js          packages and ad-hoc signs the app

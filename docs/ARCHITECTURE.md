@@ -460,7 +460,8 @@ behind. The browser mock keeps its language in `localStorage` instead.
 `scripts/package.js` runs `@electron/packager`. Version 20 is ESM-only, so it's loaded with a
 dynamic `import()` from the CommonJS script. Settings:
 
-- `platform: 'darwin'`, `arch: 'arm64'`, `asar: true`, `prune: true`;
+- `platform: 'darwin'`, `asar: true`, `prune: true`;
+- `arch` from `--arch` (default `arm64`). `npm run release` passes `--arch=arm64,x64 --zip`, which also writes `dist/Tessera-<version>-mac-<arch>.zip` with `ditto -c -k --sequesterRsrc --keepParent`. Unlike plain `zip`, `ditto` keeps the framework symlinks and the signature intact;
 - bundle id `app.tessera.mac`, category Utilities, `LSMinimumSystemVersion` 13.0;
 - `CFBundleDocumentTypes` declaring `public.folder` and `public.volume` as Viewer/Alternate, which is what makes Dock drops reach `app.on('open-file')`.
 
@@ -496,4 +497,4 @@ These come from reading the code as it stands. Each is specific and checkable.
 **Packaging and tooling**
 
 - **Dock drop only works in the packaged app.** The document types are added to `Info.plist` at packaging time. The stock `Electron.app` used by `npm start` declares none, so it never receives `open-file` for folders.
-- **arm64 only, ad-hoc signed, not notarized.** On another Mac, Gatekeeper blocks a downloaded copy until it's approved by hand. Because an ad-hoc signature has no stable identity across builds, expect to grant Full Disk Access again after rebuilding.
+- **Ad-hoc signed, not notarized.** On another Mac, Gatekeeper blocks a downloaded copy until it's approved by hand. Because an ad-hoc signature has no stable identity across builds, expect to grant Full Disk Access again after rebuilding.
